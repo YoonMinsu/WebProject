@@ -74,6 +74,100 @@
 </div>
 <!-- /.row -->
 <script type="text/javascript" src="/resources/js/reply.js"></script>
+
+<!-- 댓글 삭제와 갱신 -->
+<script>
+console.log("===============");
+console.log("JS TEST");
+
+var bnoValue = '<c:out value="${board.bno}"/>';
+
+
+/*
+//for replyService add test
+replyService.add(
+    
+    {reply:"JS Test", replyer:"tester", bno:bnoValue}
+    ,
+    function(result){ 
+      alert("RESULT: " + result);
+    }
+);
+
+
+//reply List Test
+replyService.getList({bno:bnoValue, page:1}, function(list){
+    
+	  for(var i = 0,  len = list.length||0; i < len; i++ ){
+	    console.log(list[i]);
+	  }
+});
+
+
+
+ 
+ //17번 댓글 삭제 테스트 
+ replyService.remove(17, function(count) {
+
+   console.log(count);
+
+   if (count === "success") {
+     alert("REMOVED");
+   }
+ }, function(err) {
+   alert('ERROR...');
+ });
+ 
+ 
+ //댓글 22번 수정 테스트
+ replyService.update({
+	 rno : 22,
+	 bno : bnoValue,
+	 reply : "Modify Reply..."
+ }, function(result) {
+	 alert("수정완료");
+ });
+ */
+replyService.get(23, function(data) {
+	console.log(data);
+});
+</script>
+
+
+<!-- 댓글의 목록 처리 -->
+<!-- 
+<script type="text/javascript">
+	console.log("===================");
+	console.log("JS TEST");
+	
+	var bnoValue = '<c:out value = "${board.bno}" />';
+	
+	replyService.getList( {bno:bnoValue, page:1}, function(list){
+		
+		for ( var i = 0, len = list.length||0; i < len; i++ ) {
+			console.log(list[i]);
+		}
+	});
+</script>
+-->
+
+<!-- 등록 처리 -->
+<script type="text/javascript">
+	console.log("===============");
+	console.log("JS TEST");
+	
+	var bnoValue = '<c:out value = "${board.bno}" />';
+	
+	replyService.add(
+			{ reply : "JS Test", replyer : "tester", bno:bnoValue },
+			function(result) {
+				alert("RESULT : " + result);
+			}
+);	
+</script>
+<!-- ########################################################################### -->
+
+<!-- ELSE -->
 <script type="text/javascript">
 	$(document).ready(function() {
 		console.log(replyService);
