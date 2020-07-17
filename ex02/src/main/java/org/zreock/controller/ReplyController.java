@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.zerock.domain.Criteira;
+import org.zerock.domain.ReplyPageDTO;
 import org.zerock.domain.ReplyVO;
 import org.zerock.service.ReplyService;
 
@@ -44,14 +45,16 @@ public class ReplyController {
 	
 	// 특정 게시물의 댓글 목록 확인
 	@GetMapping(value="/pages/{bno}/{page}", produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE})
-	public ResponseEntity<List<ReplyVO>> getList(@PathVariable("page") int page, @PathVariable("bno") Long bno) {
+	public ResponseEntity<ReplyPageDTO> getList(@PathVariable("page") int page, @PathVariable("bno") Long bno) {
 		log.info("getList..............");
 		
 		Criteira cir = new Criteira(page,10);
 		
+		log.info("get Reply list bno : " + bno );
+		
 		log.info(cir);
 		
-		return new ResponseEntity<List<ReplyVO>>(replyService.getList(cir, bno), HttpStatus.OK);
+		return new ResponseEntity<>(replyService.getListPage(cir, bno), HttpStatus.OK);
 	}
 	
 	// 댓글 삭제 및 조회

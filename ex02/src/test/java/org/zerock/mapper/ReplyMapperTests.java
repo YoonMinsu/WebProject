@@ -70,13 +70,22 @@ public class ReplyMapperTests {
 //		log.info("UPDATE COUNT" + count);
 //	}
 	
+//	@Test
+//	public void testList() {
+//		Criteira cri = new Criteira();
+//		
+//		List<ReplyVO> replies = mapper.getListWithPaging(cri, bnoArr[0]);
+//		
+//		replies.forEach(reply -> log.info(reply));
+//	}
+	
 	@Test
-	public void testList() {
-		Criteira cri = new Criteira();
+	public void testList2() {
+		Criteira cri = new Criteira( 1, 10 );
 		
-		List<ReplyVO> replies = mapper.getListWithPaging(cri, bnoArr[0]);
+		List<ReplyVO> replies = mapper.getListWithPaging(cri, 23582L);
 		
-		replies.forEach(reply -> log.info(reply));
+		replies.forEach( reply -> log.info(reply));
 	}
 	
 	
