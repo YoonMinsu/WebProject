@@ -1,17 +1,30 @@
 package org.zreock.controller;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+import org.zerock.domain.AttachFileDTO;
 
 import lombok.extern.log4j.Log4j;
+import net.coobird.thumbnailator.Thumbnailator;
 
 @Controller
 @Log4j
@@ -47,12 +60,15 @@ public class UploadController {
 		} // end for
 	}
 	
-	@PostMapping("/uploadAjaxAction")
-	public void uploadAjaxPost( MultipartFile[] uploadFile ) {
+	@PostMapping(value = "/uploadAjaxAction", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ResponseBody
+	public ResponseEntity<List<AttachFileDTO>> uploadAjaxPost( MultipartFile[] uploadFile ) {
 		
 		log.info( "update ajax post...........");
 		
+		List<AttachFileDTO> list = new ArrayList<>();
 		String uploadFolder = "C:\\upload";
+		String uploadFolderPath = getFolder();
 		
 		// make folder
 		File uploadPath = new File( uploadFolder, getFolder() );
@@ -71,24 +87,46 @@ public class UploadController {
 			log.info("Upload File Name : " + multipartFile.getOriginalFilename() );
 			log.info("Upload File Size : " + multipartFile.getSize() );
 			
+			AttachFileDTO attachFileDTO = new AttachFileDTO();
+			
 			String uploadFileNmae = multipartFile.getOriginalFilename();
 			
+			// IE has file path
 			uploadFileNmae = uploadFileNmae.substring(uploadFileNmae.lastIndexOf("\\") + 1 );
-			
 			log.info( "only file name : " + uploadFileNmae );
+			attachFileDTO.setFileName(uploadFileNmae);
+			
 			UUID uuid = UUID.randomUUID();
 			
 			uploadFileNmae = uuid.toString() + "_" + uploadFileNmae;
 			
-			File saveFile = new File( uploadPath, uploadFileNmae );
 			log.info("=======================================");
 			try {
+				File saveFile = new File( uploadPath, uploadFileNmae );
 				multipartFile.transferTo( saveFile );
+				
+				attachFileDTO.setUuid( uuid.toString() );
+				attachFileDTO.setUploadPath(uploadFolderPath);
+				
+				//check Image type file
+				if ( checkImageType( saveFile ) ) {
+					
+					attachFileDTO.setImage( true );
+					
+					FileOutputStream thumbnail = new FileOutputStream( new File( uploadPath, "s_" + uploadFileNmae ) );
+					
+					Thumbnailator.createThumbnail( multipartFile.getInputStream(), thumbnail, 100, 100 );
+					
+					thumbnail.close();
+				}
+				
+				// add to List
+				list.add( attachFileDTO );
 			} catch ( Exception e ) {
-				log.error( e.getMessage() );
-			}
-		}
-		
+				e.printStackTrace();
+			} // end catch
+		} // end for
+		return new ResponseEntity<List<AttachFileDTO>>(list, HttpStatus.OK);
 	}
 	
 	@GetMapping("/uploadAjax")
@@ -104,5 +142,43 @@ public class UploadController {
 		String str = sdf.format(date);
 		
 		return str.replace("-", File.separator);
+	}
+	
+	private boolean checkImageType( File file ) {
+
+		try {
+			String contentType = Files.probeContentType( file.toPath() );
+			
+			return contentType.startsWith("image");
+		} catch ( IOException e ) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	@GetMapping("/display")
+	@ResponseBody
+	public ResponseEntity<byte[]> getFile( String fileName ) {
+		log.info( "#=====================================#");
+		log.info( "fileName : " + fileName );
+		
+		File file = new File( "c:\\upload\\" + fileName );
+		
+		log.info( "file : " + file );
+		
+		ResponseEntity<byte[] > result = null;
+		
+		try {
+			HttpHeaders header = new HttpHeaders();
+			
+			header.add("Content-Type", Files.probeContentType(file.toPath()));
+			result = new ResponseEntity<byte[]>(FileCopyUtils.copyToByteArray(file), header, HttpStatus.OK );
+		
+		} catch ( IOException e ){
+			e.printStackTrace();
+		}
+		
+		log.info( "#=====================================#");
+		return result;
 	}
 }
