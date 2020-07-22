@@ -3,6 +3,8 @@ package org.zreock.controller;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -10,6 +12,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,6 +23,7 @@ import org.springframework.ui.Model;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.zerock.domain.AttachFileDTO;
@@ -180,5 +185,63 @@ public class UploadController {
 		
 		log.info( "#=====================================#");
 		return result;
+	}
+
+	@GetMapping(value = "/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+	@ResponseBody
+	public ResponseEntity<Resource> downloadFile(@RequestHeader("User-Agent") String userAgent, String fileName) {
+		log.info("===================================");
+		
+		log.info("download file : " + fileName );
+		
+		Resource resource = new FileSystemResource("c:\\upload\\" + fileName );
+		
+		if ( resource.exists() == false ) {
+			return new ResponseEntity<Resource>(HttpStatus.NOT_FOUND);
+		}
+		
+		log.info( "resource : " + resource );
+		
+		String resourceName = resource.getFilename();
+		
+		HttpHeaders header = new HttpHeaders();
+		
+		try {
+			
+			String downloadName = null;
+			
+			//인터넷 익스플로러
+			if ( userAgent.contains("Trident")) {
+				
+				log.info( "IE Browser" );
+				
+				downloadName = URLEncoder.encode(resourceName, "UTF-8").replaceAll( "\\+", " " );
+			
+			// 엣지 브라우저
+			} else if ( userAgent.contains( "Edge" ) ) {
+				
+				log.info( "Edge Browser" );
+				
+				downloadName = URLEncoder.encode(resourceName, "UTF-8" );
+				
+				log.info( "Edge Name : " + downloadName );
+			
+			// 크롬 브라우저
+			} else {
+				
+				log.info( "Chrome Browser" );
+				
+				downloadName = new String( resourceName.getBytes("UTF-8"), "ISO-8859-1");
+				
+			}
+			
+			header.add("Content-Disposition", "attachment; filename=" + downloadName);
+			
+		} catch ( UnsupportedEncodingException e ) {
+			e.printStackTrace();
+		} // end catch
+		
+		log.info("===================================\n");
+		return new ResponseEntity<Resource>(resource, header, HttpStatus.OK );
 	}
 }
