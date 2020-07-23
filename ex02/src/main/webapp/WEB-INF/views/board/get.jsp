@@ -153,7 +153,6 @@
 <script>
 
 $(document).ready(function () {
-  
   var bnoValue = '<c:out value="${board.bno}"/>';
   var replyUL = $(".chat");
   
@@ -349,7 +348,6 @@ $(document).ready(function () {
 
 <script type="text/javascript">
 $(document).ready(function() {
-  
   var operForm = $("#operForm"); 
   
   $("button[data-oper='modify']").on("click", function(e){

@@ -6,6 +6,7 @@ console.log("Reply Module...........");
 
 var replyService = (function(){
 	
+	
 	// 댓글 등록
 	function add( reply, callback, error ) {
 		console.log("add reply............");
@@ -124,6 +125,7 @@ var replyService = (function(){
 		}
 	}
 	return {
+		name : "AAAA",
 		add : add,
 		get : get,
 		getList : getList,
@@ -132,7 +134,6 @@ var replyService = (function(){
 		displayTime : displayTime
 	};
 })();
-
 
 
 

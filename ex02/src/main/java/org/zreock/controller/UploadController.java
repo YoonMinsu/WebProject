@@ -120,7 +120,7 @@ public class UploadController {
 					
 					FileOutputStream thumbnail = new FileOutputStream( new File( uploadPath, "s_" + uploadFileNmae ) );
 					
-					Thumbnailator.createThumbnail( multipartFile.getInputStream(), thumbnail, 100, 100 );
+					Thumbnailator.createThumbnail( multipartFile.getInputStream(), thumbnail, 100,100 );
 					
 					thumbnail.close();
 				}
@@ -183,7 +183,7 @@ public class UploadController {
 			e.printStackTrace();
 		}
 		
-		log.info( "#=====================================#");
+		log.info( "#=====================================#\n");
 		return result;
 	}
 
@@ -204,6 +204,9 @@ public class UploadController {
 		
 		String resourceName = resource.getFilename();
 		
+		//remove UUID
+		String resourceOriginalName = resourceName.substring(resourceName.indexOf("_") + 1 );
+		
 		HttpHeaders header = new HttpHeaders();
 		
 		try {
@@ -215,14 +218,14 @@ public class UploadController {
 				
 				log.info( "IE Browser" );
 				
-				downloadName = URLEncoder.encode(resourceName, "UTF-8").replaceAll( "\\+", " " );
+				downloadName = URLEncoder.encode(resourceOriginalName, "UTF-8").replaceAll( "\\+", " " );
 			
 			// 엣지 브라우저
 			} else if ( userAgent.contains( "Edge" ) ) {
 				
 				log.info( "Edge Browser" );
 				
-				downloadName = URLEncoder.encode(resourceName, "UTF-8" );
+				downloadName = URLEncoder.encode(resourceOriginalName, "UTF-8" );
 				
 				log.info( "Edge Name : " + downloadName );
 			
@@ -231,9 +234,11 @@ public class UploadController {
 				
 				log.info( "Chrome Browser" );
 				
-				downloadName = new String( resourceName.getBytes("UTF-8"), "ISO-8859-1");
+				downloadName = new String( resourceOriginalName.getBytes("UTF-8"), "ISO-8859-1");
 				
 			}
+			
+			log.info( "downloadName : " + downloadName );
 			
 			header.add("Content-Disposition", "attachment; filename=" + downloadName);
 			
@@ -243,5 +248,5 @@ public class UploadController {
 		
 		log.info("===================================\n");
 		return new ResponseEntity<Resource>(resource, header, HttpStatus.OK );
-	}
+	} // end downloadFile
 }
