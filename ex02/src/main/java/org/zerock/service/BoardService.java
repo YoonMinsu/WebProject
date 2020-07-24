@@ -1,6 +1,8 @@
 package org.zerock.service;
 
 import java.util.List;
+
+import org.zerock.domain.BoardAttachVO;
 import org.zerock.domain.BoardVO;
 import org.zerock.domain.Criteira;
 
@@ -18,6 +20,8 @@ public interface BoardService {
 //	public List<BoardVO> getList();
 	
 	public List<BoardVO> getList(Criteira cri);
+	
+	public List<BoardAttachVO> getAttachList( Long bno );
 	
 	public int getTotal(Criteira cri);
 }

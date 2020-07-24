@@ -1,5 +1,10 @@
 package org.zreock.controller;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -7,7 +12,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.zerock.domain.BoardAttachVO;
 import org.zerock.domain.BoardVO;
 import org.zerock.domain.Criteira;
 import org.zerock.domain.PageDTO;
@@ -24,18 +31,12 @@ public class BoardController {
 
 	private BoardService service;
 	
-//	@GetMapping("/list")
-//	public void list(Model model) {
-//		log.info("list");
-//		
-//		model.addAttribute("list", service.getList());
-//	}
 	@GetMapping("/list")
 	public void list(Criteira cri, Model model) {
 		
 		log.info("list : " + cri);
 		model.addAttribute("list", service.getList(cri));
-//		model.addAttribute("pageMaker", new PageDTO(cri, 123));
+
 		
 		int total = service.getTotal(cri);
 		
@@ -56,6 +57,7 @@ public class BoardController {
 		if ( board.getAttachList() != null ) {
 			board.getAttachList().forEach( attach -> log.info(attach));
 		}
+		
 		service.register(board);
 		
 		rttr.addFlashAttribute("result", board.getBno());
@@ -80,10 +82,10 @@ public class BoardController {
 			rttr.addFlashAttribute("result", "success");
 		}
 		
-//		rttr.addAttribute("pageNum", cri.getPageNum());
-//		rttr.addAttribute("amount", cri.getAmount());
-//		rttr.addAttribute("type", cri.getType());
-//		rttr.addAttribute("keyword", cri.getKeyword());
+		rttr.addAttribute("pageNum", cri.getPageNum());
+		rttr.addAttribute("amount", cri.getAmount());
+		rttr.addAttribute("type", cri.getType());
+		rttr.addAttribute("keyword", cri.getKeyword());
 		
 		return "redirect:/board/list" + cri.getListLink();
 	}
@@ -97,17 +99,18 @@ public class BoardController {
 			rttr.addFlashAttribute("result", "success");
 		}
 		
-//		rttr.addAttribute("pageNum", cri.getPageNum());
-//		rttr.addAttribute("amount", cri.getAmount());
-//		rttr.addAttribute("type", cri.getType());
-//		rttr.addAttribute("keyword", cri.getKeyword());
-		
 		return "redirect:/board/list" + cri.getListLink();
 	}
 	
 	@GetMapping("/register")
-	public void register() {
+	public void register() {	}
+	
+	@GetMapping( value = "/getAttachList", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ResponseBody
+	public ResponseEntity<List<BoardAttachVO>> getAttachList( Long bno ) {
+		log.info( "getAttachList : " + bno );
 		
+		return new ResponseEntity<List<BoardAttachVO>>( service.getAttachList(bno), HttpStatus.OK );
 	}
 	
 }
