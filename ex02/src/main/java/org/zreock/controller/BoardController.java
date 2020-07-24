@@ -1,6 +1,9 @@
 package org.zreock.controller;
 
 import java.util.List;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -95,7 +98,13 @@ public class BoardController {
 	public String remove(@RequestParam("bno") Long bno, @ModelAttribute("cri") Criteira cri, RedirectAttributes rttr) {
 		log.info("remove........... : " + bno);
 		
+		
+		List<BoardAttachVO> attachList = service.getAttachList(bno);
+		
 		if(service.remove(bno)) {
+			
+			deleteFiles(attachList);
+			
 			rttr.addFlashAttribute("result", "success");
 		}
 		
@@ -113,4 +122,57 @@ public class BoardController {
 		return new ResponseEntity<List<BoardAttachVO>>( service.getAttachList(bno), HttpStatus.OK );
 	}
 	
+	// 파일 삭제 처리
+	public void deleteFiles( List<BoardAttachVO> attachList ) {
+		
+		if ( attachList == null || attachList.size() == 0 ) {
+			return;
+		}
+		log.info( "==============================================");
+		log.info( "Delete attach Files...........................");
+		log.info( attachList );
+		
+		attachList.forEach( attach -> {
+			try {
+				
+				Path file = Paths.get("C:\\upload\\"+attach.getUploadPath()+"\\"+attach.getUuid()+"_"+attach.getFileName());
+				
+				Files.deleteIfExists(file);
+				
+				if ( Files.probeContentType(file).startsWith("image")) {
+					
+					Path thumbNail = Paths.get("C:\\upload\\"+attach.getUploadPath()+"\\s_" + attach.getUuid()+"_"+attach.getFileName());
+					
+					Files.delete( thumbNail );
+				
+				}
+				
+			} catch ( Exception e ) {
+				log.error( "delete file error" + e.getMessage()) ;
+			}
+			
+		});
+		log.info( "==============================================");
+	}
+	
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

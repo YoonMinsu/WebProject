@@ -440,8 +440,9 @@ $(document).ready(function () {
 
  
 });
+</script>
   
-<script type="text/javascript">
+<script>
 $(document).ready(function() {
   
   var operForm = $("#operForm"); 

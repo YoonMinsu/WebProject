@@ -17,7 +17,14 @@
 		DELETE FROM
 			tbl_attach
 		WHERE
-			uuid = #{ uuid }
+			uuid = #{uuid}
+	</delete>
+	
+	<delete id = "deleteAll">
+		DELETE
+			tbl_attach
+		WHERE
+			bno = #{bno}
 	</delete>
 	
 <!-- SELECT -->
@@ -27,6 +34,6 @@
 		FROM
 			tbl_attach
 		WHERE
-			bno = #{ bno }
+			bno = #{bno}
 	</select>
 </mapper>
