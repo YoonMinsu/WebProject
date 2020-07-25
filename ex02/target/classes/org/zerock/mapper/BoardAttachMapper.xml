@@ -36,4 +36,13 @@
 		WHERE
 			bno = #{bno}
 	</select>
+	
+	<select id="getOldFiles" resultType = "org.zerock.domain.BoardAttachVO">
+		SELECT
+			*
+		FROM
+			tbl_attach
+		WHERE
+			uploadPath = to_char(sysdate - 1, 'yyyy\mm\dd')
+	</select>
 </mapper>
