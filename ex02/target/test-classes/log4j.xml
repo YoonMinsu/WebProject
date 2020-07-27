@@ -18,7 +18,6 @@
 	</logger>
 
 	<!-- 3rdparty Loggers -->
-	<!--
 	<logger name="org.springframework.core">
 		<level value="info" />
 	</logger>	
@@ -30,13 +29,13 @@
 	<logger name="org.springframework.context">
 		<level value="info" />
 	</logger>
-	-->
+	
 	<logger name="org.springframework.web">
 		<level value="info" />
 	</logger>
 	<!-- Root Logger -->
 	<root>
-		<priority value="warn" />
+		<priority value="info" />
 		<appender-ref ref="console" />
 	</root>
 	
