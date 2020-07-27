@@ -32,7 +32,11 @@ public class CommonContoller {
 		if ( logout != null ) {
 			model.addAttribute("logout", "Logout!!!");
 		}
+	}
+	
+	@GetMapping("/customLogout")
+	public void logoutGet() {
 		
-		
+		log.info( "custom logout" );
 	}
 }
