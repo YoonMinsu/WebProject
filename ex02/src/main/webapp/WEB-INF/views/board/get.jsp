@@ -2,12 +2,13 @@
   pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 <%@include file="../include/header.jsp"%>
 
 
 <div class="row">
   <div class="col-lg-12">
-    <h1 class="page-header">Board Get</h1>
+    <h1 class="page-header">Board Read</h1>
   </div>
   <!-- /.col-lg-12 -->
 </div>
@@ -17,7 +18,7 @@
   <div class="col-lg-12">
     <div class="panel panel-default">
 
-      <div class="panel-heading">Board get Page</div>
+      <div class="panel-heading">Board Read Page</div>
       <!-- /.panel-heading -->
       <div class="panel-body">
 
@@ -42,10 +43,31 @@
             value='<c:out value="${board.writer }"/>' readonly="readonly">
         </div>
 
+<%-- 		<button data-oper='modify' class="btn btn-default">
+        <a href="/board/modify?bno=<c:out value="${board.bno}"/>">Modify</a></button>
+        <button data-oper='list' class="btn btn-info">
+        <a href="/board/list">List</a></button> --%>
 
 
-<button data-oper='modify' class="btn btn-default">Modify</button>
+<!-- <button data-oper='modify' class="btn btn-default">Modify</button>
+ -->
+        <sec:authentication property="principal" var="pinfo"/>
+
+        <sec:authorize access="isAuthenticated()">
+
+        <c:if test="${pinfo.username eq board.writer}">
+        
+        	<button data-oper='modify' class="btn btn-default">Modify</button>
+        
+        </c:if>
+        </sec:authorize>
+
 <button data-oper='list' class="btn btn-info">List</button>
+
+<%-- <form id='operForm' action="/boad/modify" method="get">
+  <input type='hidden' id='bno' name='bno' value='<c:out value="${board.bno}"/>'>
+</form> --%>
+
 
 <form id='operForm' action="/boad/modify" method="get">
   <input type='hidden' id='bno' name='bno' value='<c:out value="${board.bno}"/>'>
@@ -159,10 +181,18 @@
         <i class="fa fa-comments fa-fw"></i> Reply
       </div> -->
       
-      <div class="panel-heading">
+<!--       <div class="panel-heading">
         <i class="fa fa-comments fa-fw"></i> Reply
         <button id='addReplyBtn' class='btn btn-primary btn-xs pull-right'>New Reply</button>
+      </div>      -->
+      
+      <div class="panel-heading">
+        <i class="fa fa-comments fa-fw"></i> Reply
+        <sec:authorize access="isAuthenticated()">
+        		<button id='addReplyBtn' class='btn btn-primary btn-xs pull-right'>New Reply</button>
+        </sec:authorize>
       </div>      
+       
       
       
       <!-- /.panel-heading -->
@@ -208,19 +238,19 @@
                 <label>Reply Date</label> 
                 <input class="form-control" name='replyDate' value='2018-01-01 13:13'>
               </div>
-      
             </div>
-<div class="modal-footer">
-        <button id='modalModBtn' type="button" class="btn btn-warning">Modify</button>
-        <button id='modalRemoveBtn' type="button" class="btn btn-danger">Remove</button>
-        <button id='modalRegisterBtn' type="button" class="btn btn-primary">Register</button>
-        <button id='modalCloseBtn' type="button" class="btn btn-default">Close</button>
-      </div>          </div>
-          <!-- /.modal-content -->
-        </div>
-        <!-- /.modal-dialog -->
-      </div>
-      <!-- /.modal -->
+		  <div class="modal-footer">
+	        <button id='modalModBtn'      type="button" class="btn btn-warning"> Modify   </button>
+	        <button id='modalRemoveBtn'   type="button" class="btn btn-danger">  Remove   </button>
+	        <button id='modalRegisterBtn' type="button" class="btn btn-primary"> Register </button>
+	        <button id='modalCloseBtn'    type="button" class="btn btn-default"> Close    </button>
+	      </div>          
+      	</div>
+        <!-- /.modal-content -->
+       </div>
+       <!-- /.modal-dialog -->
+     </div>
+     <!-- /.modal -->
 
 
 
@@ -344,23 +374,39 @@ $(document).ready(function () {
     var modalRemoveBtn = $("#modalRemoveBtn");
     var modalRegisterBtn = $("#modalRegisterBtn");
     
+	
     $("#modalCloseBtn").on("click", function(e){
     	
     	modal.modal('hide');
     });
     
-    $("#addReplyBtn").on("click", function(e){
-      
-      modal.find("input").val("");
-      modalInputReplyDate.closest("div").hide();
-      modal.find("button[id !='modalCloseBtn']").hide();
-      
-      modalRegisterBtn.show();
-      
-      $(".modal").modal("show");
-      
-    });
+	var replyer = null;
     
+    <sec:authorize access="isAuthenticated()">
+    
+    replyer = '<sec:authentication property="principal.username"/>';   
+    
+  	</sec:authorize>
+ 
+    var csrfHeaderName = "${_csrf.headerName}"; 
+    var csrfTokenValue = "${_csrf.token}";
+    
+   $("#addReplyBtn").on("click", function(e){
+        
+        modal.find("input").val("");
+        modal.find("input[name='replyer']").val(replyer).attr("readonly", "readonly");
+        modal.find("button[id !='modalCloseBtn']").hide();
+        modalInputReplyDate.closest("div").hide();
+        
+        modalRegisterBtn.show();
+        
+        $(".modal").modal("show");
+        
+      });
+    
+    $(document).ajaxSend(function(e,xhr,options) {
+    	  xhr.setRequestHeader( csrfHeaderName, csrfTokenValue);
+    });
 
     modalRegisterBtn.on("click",function(e){
       
@@ -385,14 +431,14 @@ $(document).ready(function () {
 
 
   //댓글 조회 클릭 이벤트 처리 
-    $(".chat").on("click", "li", function(e){
+       $(".chat").on("click", "li", function(e){
       
       var rno = $(this).data("rno");
       
       replyService.get(rno, function(reply){
       
         modalInputReply.val(reply.reply);
-        modalInputReplyer.val(reply.replyer);
+        modalInputReplyer.val(reply.replyer).attr("readonly", "readonly");
         modalInputReplyDate.val(replyService.displayTime( reply.replyDate))
         .attr("readonly","readonly");
         modal.data("rno", reply.rno);
@@ -405,13 +451,29 @@ $(document).ready(function () {
             
       });
     });
-  
-    
-
 
     modalModBtn.on("click", function(e){
-    	  
-   	  var reply = {rno:modal.data("rno"), reply: modalInputReply.val()};
+    	
+      var originalReplyer = modalInputReplyer.val();
+        
+   	  var reply = { rno:modal.data("rno"), 
+   			        reply: modalInputReply.val(),
+   			        replyer: originalReplyer
+   			      };
+   	  
+   	  if ( !replyer ) {
+   		  alert( "로그인 후 수정이 가능합니다!" );
+   		  modal.modal("hide");
+   		  return;
+   	  }
+   	  
+   	  console.log( "Original Replyer : " + originalReplyer );
+   	  
+   	  if ( replyer != originalReplyer ) {
+   		  alert( "자신이 작성한 댓글만 수정이 가능합니다!" );
+   		  modal.modal("hide");
+   		  return;
+   	  }
    	  
    	  replyService.update(reply, function(result){
    	        
@@ -428,7 +490,27 @@ $(document).ready(function () {
    	  
    	  var rno = modal.data("rno");
    	  
-   	  replyService.remove(rno, function(result){
+   	  console.log( "RNO : " + rno );
+   	  console.log("REPLYER : " + replyer );
+   	  
+   	  if ( !replyer ) {
+   		  alert("로그인 후 삭제가 가능합니다!" );
+   		  modal.modal("hide");
+   		  return;
+   	  }
+   	  
+   	  var originalReplyer = modalInputReplyer.val();
+   	  
+   	  console.log( "Original Replyer : " + originalReplyer );
+   	  
+   	  if ( replyer != originalReplyer ) {
+   		  
+   		  alert("자신이 작성한 댓글만 삭제가 가능합니다!" );
+   		  modal.modal("hide");
+   		  return;
+   	  }
+   	   
+   	  replyService.remove(rno, originalReplyer, function(result){
    	        
    	      alert(result);
    	      modal.modal("hide");
@@ -436,8 +518,8 @@ $(document).ready(function () {
    	      
    	  });
    	  
-   	});
-
+   	}); // end Remove
+    
  
 });
 </script>
